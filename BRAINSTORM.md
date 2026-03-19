@@ -15,3 +15,5 @@ Para finalizar o pedido, o cliente deve copiar a cave PIX na página da Cantina,
 # projeto
 
 Chatbot com controle de produtos, clientes e pedidos, com botões para adição de produtos nos pedidos. 
+
+WhatsApp Chatbot feito em n8n, Python e MySQL.
