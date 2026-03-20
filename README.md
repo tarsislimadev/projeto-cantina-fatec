@@ -14,6 +14,20 @@ Projeto Web para gestão comercial da Cantina Fatec.
 
 Dia 26/03, no início da aula de Linguagens de Programação 2.
 
+## como funciona
+
+Instalar bibliotecas Python
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Executar o projeto no PowerShell
+
+```bash
+python ./app.py
+```
+
 ## licença
 
 [MIT](./LICENSE)
