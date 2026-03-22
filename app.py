@@ -24,6 +24,12 @@ class Consumo:
     self.produto = produto
     self.pagamento = pagamento
 
+class Cantina:
+    def __init__(self):
+        self.estoque = []
+        self.pagamentos = []
+        self.consumos = []
+
 def menu():
   while True:
     print('-- menu --')
