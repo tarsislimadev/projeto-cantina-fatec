@@ -24,4 +24,6 @@ Produto no estoque não é produto no carrinho.
 
 Pagamentos de carrinhos são agregações de pagamentos unitários.
 
+## 
 
+Vamos utilizar Python como servidor com bibliotecas para aplicações da Cantina: android, ios, web, console, windows, linux, whatsapp, telegram, instagram, messenger, ifood.
