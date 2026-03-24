@@ -1,10 +1,14 @@
 class Produto:
-  def __init__(self, nome, preco_compra, preco_venda, data_compra, data_vencimento, quantidade):
+  def __init__(self, nome, preco_compra, preco_venda, data_compra, data_vencimento):
     self.nome = nome
     self.preco_compra = preco_compra
     self.preco_venda = preco_venda
     self.data_compra = data_compra
     self.data_vencimento = data_vencimento
+
+class ProdutoEstoque(Produto):
+  def __init__(self, nome, preco_compra, preco_venda, data_compra, data_vencimento, quantidade):
+    super(nome, preco_compra, preco_venda, data_compra, data_vencimento)
     self.quantidade = quantidade
 
   def __repr__(self):
@@ -15,6 +19,9 @@ class Produto:
 
   def descrever_quantidade(self):
     return f'{self.nome} ({self.quantidade} item{plural(self.quantidade)})'
+
+class ProdutoCarrinho(ProdutoEstoque):
+  pass
 
 class Pagamento:
   def __init__(self, nome, categoria, curso, valor, data_hora):
@@ -44,29 +51,51 @@ class Estoque(Lista):
   def remover_produto(self, produto, quantidade):
     pass
 
+class Carrinho(Lista):
+  pass
+
 class Pagamentos(Lista):
   pass
 
 class Consumos(Lista):
   pass
 
+class Cliente():
+  def __init__(self, nome):
+    self.nome = nome
+
 class Cantina:
   def __init__(self):
     self.estoque = Estoque()
+    self.carrinho = Carrinho()
     self.pagamentos = Pagamentos()
     self.consumos = Consumos()
+    self.cliente = None
 
-  def adicionar_estoque(self, produto: Produto):
+  def adicionar_estoque(self, produto: ProdutoEstoque):
     self.estoque.adicionar(produto)
     print(f'Produto "{produto.nome}" adiconado ao estoque')
 
-  def remover_estoque(self, produto: Produto, quantidade = 1):
+  def remover_estoque(self, produto: ProdutoEstoque, quantidade = 1):
     self.estoque.remover_produto(produto, quantidade)
     print(f'{quantidade} produto{plural(quantidade)} "{produto.nome}" removido{plural(quantidade)} do estoque')
 
   def listar_estoque(self):
     return self.estoque.listar()
   
+  def ver_cliente():
+    pass
+
+  def escolher_cliente(self):
+    while True:
+      print('--- Cliente ---')
+      nome = input_data('nome')
+      if nome:
+        return Cliente(nome)
+
+  def adicionar_cliente(self, cliente):
+    self.cliente = cliente
+
   def escolher_estoque(self):
     while True:
       print('--- Estoque ---')
@@ -78,6 +107,9 @@ class Cantina:
 
   def quantidade_produtos(self):
     return sum([1 for _ in self.estoque.listar()])
+
+  def adicionar_carrinho(self, produto, quantidade):
+    pass
 
 # # auxiliar
 
@@ -115,22 +147,28 @@ def menu():
         data_vencimento = input_data('data_vencimento')
         quantidade = input_data('quantidade', int)
         
-        produto = Produto(nome, preco_compra, preco_venda, data_compra, data_vencimento, quantidade)
-    
+        produto = ProdutoEstoque(nome, preco_compra, preco_venda, data_compra, data_vencimento, quantidade)
+
         cantina.adicionar_estoque(produto)
         continue
       case '2':
-        print('--- Remover produto do estoque ---')
+        print('--- Adicionar produto ao carrinho ---')
         produto = cantina.escolher_estoque()
         quantidade = input_data('quantidade', int)
-        cantina.remover_estoque(produto, quantidade)
+        cantina.adicionar_carrinho(produto, quantidade)
         continue
       case '3':
         print('--- Ver estoque ---')
         [print(f'{ix+1}. {p.descrever_quantidade()}') for ix, p in enumerate(cantina.listar_estoque())]
         continue
       case '4':
-        print('-- item 4 --')
+        print('--- Adicionar produto ao carrinho ---')
+        produto = cantina.escolher_estoque()
+        quantidade = input_data('quantidade', int)
+        if not cantina.ver_cliente():
+          cliente = cantina.escolher_cliente()
+          cantina.adicionar_cliente(cliente)
+        # cantina.adicionar_carrinho(ProdutoCarrinho(*produto, quantidade=quantidade))
         continue
       case '5':
         print('-- item 5 --')
