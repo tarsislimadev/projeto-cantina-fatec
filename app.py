@@ -31,11 +31,15 @@ class Lista(list):
   def adicionar(self, item):
     self.append(item)
 
+  def remover(self, item):
+    pass
+
   def listar(self):
     return [s for s in self]
 
 class Estoque(Lista):
-  pass
+  def remover_produto(self, produto, quantidade):
+    pass
 
 class Pagamentos(Lista):
   pass
@@ -53,13 +57,29 @@ class Cantina:
     self.estoque.adicionar(produto)
     print(f'Produto "{produto.nome}" adiconado ao estoque')
 
+  def remover_estoque(self, produto: Produto, quantidade = 1):
+    self.estoque.remover_produto(produto, quantidade)
+    print(f'{quantidade} produto{plural(quantidade)} "{produto.nome}" removido{plural(quantidade)} do estoque')
+
   def listart_estoque(self):
     return self.estoque.listar()
   
+  def escolher_estoque(self):
+    while True:
+      print('--- Estoque ---')
+      produtos = self.estoque.listar()
+      [print(f'{ix+1}. {p.nome} ({p.quantidade})') for ix, p in enumerate(produtos)]
+      item = int(input('> '))
+      if produtos[item-1]:
+        return produtos[item-1]
+
   def quantidade_produtos(self):
     return sum([1 for _ in self.estoque.listar()])
 
 # # auxiliar
+
+def plural(num):
+  return 's' if num > 1 else ''
 
 def input_data(txt, parser = str):
   return parser(input(f'{txt}: '))
@@ -97,7 +117,10 @@ def menu():
         cantina.adicionar_estoque(produto)
         continue
       case '2':
-        print('-- item 2 --')
+        print('--- Remover produto do estoque ---')
+        produto = cantina.escolher_estoque()
+        quantidade = int(input('Quantidade: '))
+        cantina.remover_estoque(produto, quantidade)
         continue
       case '3':
         print('-- item 3 --')
