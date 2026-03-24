@@ -13,6 +13,9 @@ class Produto:
   def atualizar_a_quantidade(self, nova_qtd):
     self.quantidade = nova_qtd
 
+  def descrever_quantidade(self):
+    return f'{self.nome} ({self.quantidade} item{plural(self.quantidade)})'
+
 class Pagamento:
   def __init__(self, nome, categoria, curso, valor, data_hora):
     self.nome = nome
@@ -61,13 +64,13 @@ class Cantina:
     self.estoque.remover_produto(produto, quantidade)
     print(f'{quantidade} produto{plural(quantidade)} "{produto.nome}" removido{plural(quantidade)} do estoque')
 
-  def listart_estoque(self):
+  def listar_estoque(self):
     return self.estoque.listar()
   
   def escolher_estoque(self):
     while True:
       print('--- Estoque ---')
-      produtos = self.estoque.listar()
+      produtos = self.listar_estoque()
       [print(f'{ix+1}. {p.nome} ({p.quantidade})') for ix, p in enumerate(produtos)]
       item = int(input('> '))
       if produtos[item-1]:
@@ -119,11 +122,12 @@ def menu():
       case '2':
         print('--- Remover produto do estoque ---')
         produto = cantina.escolher_estoque()
-        quantidade = int(input('Quantidade: '))
+        quantidade = input_data('quantidade', int)
         cantina.remover_estoque(produto, quantidade)
         continue
       case '3':
-        print('-- item 3 --')
+        print('--- Ver estoque ---')
+        [print(f'{ix+1}. {p.descrever_quantidade()}') for ix, p in enumerate(cantina.listar_estoque())]
         continue
       case '4':
         print('-- item 4 --')
