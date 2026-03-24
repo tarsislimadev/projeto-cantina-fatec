@@ -53,6 +53,12 @@ class Cantina:
     self.estoque.adicionar(produto)
     print(f'Produto "{produto.nome}" adiconado ao estoque')
 
+  def listart_estoque(self):
+    return self.estoque.listar()
+  
+  def quantidade_produtos(self):
+    return sum([1 for _ in self.estoque.listar()])
+
 # # auxiliar
 
 def input_data(txt, parser = str):
@@ -62,17 +68,23 @@ def menu():
   cantina = Cantina()
 
   while True:
-    print('-- menu --')
+    print('-- Menu --')
     print('1. Adicionar produto ao estoque')
-    print('2. Vender produto')
-    print('3. Extrair relatorio de vendas')
-    print('4. Extrair relatorio de consumos')
-    print('0. sair')
+    print('2. Remover produto do estoque')
+    print('3. Ver estoque')
+    print('4. Adicionar produto ao carrinho')
+    print('5. Remover produto do carrinho')
+    print('6. Ver carrinho')
+    print('7. Finalizar carrinho')
+    print('8. Extrair relatorio de vendas')
+    print('9. Extrair relatorio de consumos')
+    print('0. Sair')
   
     opcao = input('> ')
-  
+
     match opcao:
       case '1':
+        print('--- Adicionar produto ao estoque ---')
         nome = input_data('nome')
         preco_compra = input_data('preco_compra', float)
         preco_venda = input_data('preco_venda', float)
@@ -92,6 +104,21 @@ def menu():
         continue
       case '4':
         print('-- item 4 --')
+        continue
+      case '5':
+        print('-- item 5 --')
+        continue
+      case '6':
+        print('-- item 6 --')
+        continue
+      case '7':
+        print('-- item 7 --')
+        continue
+      case '8':
+        print('-- item 8 --')
+        continue
+      case '9':
+        print('-- item 9 --')
         continue
       case '0':
         print('-- sair --')
