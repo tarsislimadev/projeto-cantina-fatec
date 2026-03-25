@@ -130,8 +130,8 @@ class Cantina:
       print('--- Estoque ---')
       produtos = self.listar_estoque()
       [print(f'{ix+1}. {p}') for ix, p in enumerate(produtos)]
-      item = int(input('> '))
       try:
+        item = int(input('> '))
         return produtos[item-1]
       except:
         print('Produto não encontrado.')
@@ -140,6 +140,15 @@ class Cantina:
     return sum([1 for _ in self.estoque.listar()])
 
   def adicionar_carrinho(self, produto, quantidade):
+    pass
+
+  def listar_carrinho(self):
+    return self.carrinho.listar()
+  
+  def escolher_carrinho(self):
+    pass
+
+  def remover_carrinho(self, produto, quantidade):
     pass
 
 # # auxiliar
@@ -191,28 +200,33 @@ def menu():
         [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_estoque())]
         continue
       case '4':
-        print('-- item 4 --')
+        print('--- Adicionar produto ao carrinho ---')
+        produto: ItemEstoque = cantina.escolher_estoque()
+        quantidade = input_data('quantidade', int)
+        cantina.adicionar_carrinho(produto, quantidade)
+        cantina.remover_estoque(produto, quantidade)
         continue
       case '5':
-        print('-- item 5 --')
+        print('--- Remover produto do carrinho ---')
+        produto: ItemEstoque = cantina.escolher_carrinho()
+        quantidade = input_data('quantidade', int)
+        cantina.remover_carrinho(produto, quantidade)
+        cantina.adicionar_estoque(produto, quantidade)
         continue
       case '6':
-        print('-- item 6 --')
+        print('--- Ver carrinho ---')
         continue
       case '7':
-        print('-- item 7 --')
+        print('--- Finalizar carrinho ---')
         continue
       case '8':
-        print('-- item 8 --')
+        print('--- Relatorio de vendas ---')
         continue
       case '9':
-        print('-- item 9 --')
+        print('--- Relatorio de consumos ---')
         continue
       case '0':
-        print('-- sair --')
+        print('-- Sair --')
         exit(0)
-      case _:
-        print('-- opcao invalida --')
-        continue
   
 menu()
