@@ -68,7 +68,7 @@ class Estoque(Lista):
           self.dados[ix].quantidade -= quantidade
           print(f'{quantidade} {plural(quantidade, 'itens', 'item')} do produto "{produto.nome}" removido{plural(quantidade)} do estoque')
         else:
-          print('Quantidade não pode ser menor que 0.')
+          print('--- quantidade não pode ser menor que 0 ---')
 
     self.dump()
   
@@ -106,7 +106,7 @@ class Cantina:
 
   def adicionar_estoque(self, produto: Produto, quantidade = 1):
     self.estoque.adicionar(ItemEstoque(produto, quantidade))
-    print(f'Produto "{produto.nome}" adiconado ao estoque')
+    print(f'--- produto "{produto.nome}" adiconado ao estoque ---')
 
   def remover_estoque(self, item: ItemEstoque, quantidade = 1):
     self.estoque.remover_produto(item.produto, quantidade)
@@ -119,7 +119,7 @@ class Cantina:
 
   def escolher_cliente(self):
     while True:
-      print('--- Cliente ---')
+      print('--- cliente ---')
       nome = input_data('nome')
       if nome:
         return Cliente(nome)
@@ -129,14 +129,14 @@ class Cantina:
 
   def escolher_estoque(self):
     while True:
-      print('--- Estoque ---')
+      print('--- estoque ---')
       produtos = self.listar_estoque()
       [print(f'{ix+1}. {p}') for ix, p in enumerate(produtos)]
       try:
         item = int(input('> '))
         return produtos[item-1]
       except:
-        print('Produto não encontrado.')
+        print('--- produto não encontrado ---')
 
   def quantidade_produtos(self):
     return sum([1 for _ in self.estoque.listar()])
@@ -165,23 +165,23 @@ def menu():
   cantina = Cantina()
 
   while True:
-    print('-- Menu --')
-    print('1. Adicionar produto ao estoque')
-    print('2. Remover produto do estoque')
-    print('3. Ver estoque')
-    print('4. Adicionar produto ao carrinho')
-    print('5. Remover produto do carrinho')
-    print('6. Ver carrinho')
-    print('7. Finalizar carrinho')
-    print('8. Extrair relatorio de vendas')
-    print('9. Extrair relatorio de consumos')
-    print('0. Sair')
+    print('-- menu --')
+    print('1. adicionar produto ao estoque')
+    print('2. remover produto do estoque')
+    print('3. ver estoque')
+    print('4. adicionar produto ao carrinho')
+    print('5. remover produto do carrinho')
+    print('6. ver carrinho')
+    print('7. finalizar carrinho')
+    print('8. extrair relatorio de vendas')
+    print('9. extrair relatorio de consumos')
+    print('0. sair')
   
     opcao = input('> ')
 
     match opcao:
       case '1':
-        print('--- Adicionar produto ao estoque ---')
+        print('--- adicionar produto ao estoque ---')
         nome = input_data('nome')
         preco_compra = input_data('preco de compra', float)
         preco_venda = input_data('preco de venda', float)
@@ -192,43 +192,43 @@ def menu():
         cantina.adicionar_estoque(produto, quantidade)
         continue
       case '2':
-        print('--- Remover produto do estoque ---')
+        print('--- remover produto do estoque ---')
         produto: ItemEstoque = cantina.escolher_estoque()
         quantidade = input_data('quantidade', int)
         cantina.remover_estoque(produto, quantidade)
         continue
       case '3':
-        print('--- Ver estoque ---')
+        print('--- ver estoque ---')
         [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_estoque())]
         continue
       case '4':
-        print('--- Adicionar produto ao carrinho ---')
+        print('--- adicionar produto ao carrinho ---')
         produto: ItemEstoque = cantina.escolher_estoque()
         quantidade = input_data('quantidade', int)
         cantina.adicionar_carrinho(produto, quantidade)
         cantina.remover_estoque(produto, quantidade)
         continue
       case '5':
-        print('--- Remover produto do carrinho ---')
+        print('--- remover produto do carrinho ---')
         produto: ItemEstoque = cantina.escolher_carrinho()
         quantidade = input_data('quantidade', int)
         cantina.remover_carrinho(produto, quantidade)
         cantina.adicionar_estoque(produto, quantidade)
         continue
       case '6':
-        print('--- Ver carrinho ---')
+        print('--- ver carrinho ---')
         continue
       case '7':
-        print('--- Finalizar carrinho ---')
+        print('--- finalizar carrinho ---')
         continue
       case '8':
-        print('--- Relatorio de vendas ---')
+        print('--- relatorio de vendas ---')
         continue
       case '9':
-        print('--- Relatorio de consumos ---')
+        print('--- relatorio de consumos ---')
         continue
       case '0':
-        print('-- Sair --')
+        print('-- sair --')
         exit(0)
   
 menu()
