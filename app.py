@@ -1,6 +1,5 @@
 # python -m pip install Faker
 
-import pickle
 from faker import Faker
 from datetime import datetime, timedelta
 
@@ -17,62 +16,51 @@ class Produto:
   def __repr__(self):
     return f'produto "{self.nome}", R$ {self.preco_compra} (compra), R$ {self.preco_venda} (venda), {self.data_compra} (aquisicao), {self.data_vencimento} (validade)'
 
+class Cliente():
+  def __init__(self, nome):
+    self.nome = nome
+
 class Pagamento:
-  def __init__(self, produto, cliente, data_hora):
+  def __init__(self, produto: Produto, cliente: Cliente, data_hora: datetime):
     self.produto = produto
     self.cliente = cliente
     self.data_hora = data_hora
 
 class Consumo:
-  def __init__(self, cliente, produto, pagamento):
+  def __init__(self, produto: Produto, cliente: Cliente, pagamento: Pagamento):
     self.cliente = cliente
     self.produto = produto
     self.pagamento = pagamento
 
-class PickleManager():
+class DataManager():
   def __init__(self, arquivo):
     self.arquivo = arquivo
     self.dados = list()
-    self.dump()
 
-  def load(self):
-    with open(self.arquivo, 'rb') as f:
-      self.dados = pickle.load(f)
-
-  def dump(self):
-    with open(self.arquivo, 'wb') as f:
-      pickle.dump(self.dados, f)
-
-class Lista(PickleManager):
+class Lista(DataManager):
   def adicionar(self, item):
-    self.load()
     self.dados.append(item)
-    self.dump()
 
   def listar(self):
-    self.load()
     return [s for s in self.dados]
 
-class Estoque(Lista):
-  def __init__(self):
-    super().__init__('estoque.pkl')
-
+class ListaProdutos(Lista):
   def remover_produto(self, produto: Produto, quantidade = 1):
-    self.load()
-
-    for ix, p in enumerate(self.dados):
+    for p in self.dados:
       if p.produto.nome == produto.nome:
         if p.quantidade - quantidade >= 0:
-          self.dados[ix].quantidade -= quantidade
+          p.quantidade -= quantidade
           print_title(f'removido {quantidade} {plural(quantidade, 'itens', 'item')}: {produto}')
           return True
         else:
           quantidade_invalida()
-
-    self.dump()
     return False
   
-class Carrinho(Lista):
+class Estoque(ListaProdutos):
+  def __init__(self):
+    super().__init__('estoque.pkl')
+
+class Carrinho(ListaProdutos):
   def __init__(self):
     super().__init__('carrinho.pkl')
 
@@ -84,11 +72,7 @@ class Consumos(Lista):
   def __init__(self):
     super().__init__('consumos.pkl')
 
-class Cliente():
-  def __init__(self, nome):
-    self.nome = nome
-
-class ItemEstoque():
+class ItemProduto():
   def __init__(self, produto: Produto, quantidade = 1):
     self.produto = produto
     self.quantidade = quantidade
@@ -96,13 +80,11 @@ class ItemEstoque():
   def __repr__(self):
     return f'{self.produto} ({self.quantidade} {plural(self.quantidade, 'itens', 'item')})'
   
-class ItemCarrinho():
-  def __init__(self, produto: Produto, quantidade = 1):
-    self.produto = produto
-    self.quantidade = quantidade
+class ItemEstoque(ItemProduto):
+  pass
 
-  def __repr__(self):
-    return f'{self.produto} ({self.quantidade} {plural(self.quantidade, 'itens', 'item')})'
+class ItemCarrinho(ItemProduto):
+  pass
   
 class Cantina:
   def __init__(self):
@@ -132,7 +114,7 @@ class Cantina:
       if nome:
         return Cliente(nome)
 
-  def adicionar_cliente(self, cliente):
+  def adicionar_cliente(self, cliente: Cliente):
     self.cliente = cliente
 
   def escolher_estoque(self) -> ItemEstoque:
@@ -151,8 +133,8 @@ class Cantina:
   def escolher_carrinho(self):
     return escolher('carrinho', self.listar_carrinho())
 
-  def remover_carrinho(self, produto, quantidade):
-    pass
+  def remover_carrinho(self, produto: Produto, quantidade = 1):
+    self.carrinho.remover_produto(produto, quantidade)
 
 # # auxiliar
 
