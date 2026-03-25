@@ -96,7 +96,7 @@ class Cantina:
 
   def adicionar_estoque(self, produto: Produto, quantidade = 1):
     self.estoque.adicionar(ItemEstoque(produto, quantidade))
-    print_title(f'produto "{produto.nome}" adiconado ao estoque')
+    print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')} {produto} ao estoque')
 
   def remover_estoque(self, produto: Produto, quantidade = 1):
     self.estoque.remover_produto(produto, quantidade)
@@ -125,7 +125,7 @@ class Cantina:
 
   def adicionar_carrinho(self, produto: Produto, quantidade = 1):
     self.carrinho.adicionar(ItemCarrinho(produto, quantidade))
-    print_title(f'produto "{produto.nome}" adiconado ao carrinho')
+    print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')} {produto} ao carrinho')
 
   def listar_carrinho(self):
     return self.carrinho.listar()
@@ -160,7 +160,10 @@ def plural(num, muitostr = 's', poucostr = ''):
   return muitostr if num > 1 else poucostr
 
 def input_parsed(txt, parser = str):
-  return parser(input(f'{txt}: '))
+  while True:
+    ret = input(f'{txt}: ')
+    if ret != '':
+      return parser(ret)
 
 def menu():
   cantina = Cantina()
