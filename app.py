@@ -2,6 +2,7 @@
 
 from faker import Faker
 from datetime import datetime, timedelta
+from text import print_title, quantidade_invalida
 
 fake = Faker('pt-br')
 
@@ -17,8 +18,14 @@ class Produto:
     return f'produto "{self.nome}", R$ {self.preco_compra} (compra), R$ {self.preco_venda} (venda), {self.data_compra} (aquisicao), {self.data_vencimento} (validade)'
 
 class Cliente():
-  def __init__(self, nome):
+  def __init__(self, nome, tipo, curso, periodo):
     self.nome = nome
+    self.tipo = tipo
+    self.curso = curso
+    self.periodo = periodo
+
+  def __repr__(self):
+    return f'cliente "{self.nome}", {self.tipo} (tipo), {self.curso} (curso), {self.periodo} (periodo)'
 
 class Pagamento:
   def __init__(self, produto: Produto, cliente: Cliente, data_hora: datetime):
@@ -106,6 +113,18 @@ class ItemEstoque(ItemProduto):
 class ItemCarrinho(ItemProduto):
   pass
   
+class ItemPagamento():
+  def __init__(self, pagamento: Pagamento, produtos = []):
+    self.pagamento = pagamento
+    self.produtos = produtos
+    self.datahora = datetime.now().isoformat()
+
+class ItemConsumo():
+  def __init__(self, cliente: Cliente, produtos = []):
+    self.cliente = cliente
+    self.produtos = produtos
+    self.datahora = datetime.now().isoformat()
+
 class Cantina:
   def __init__(self):
     self.estoque = Estoque()
@@ -126,11 +145,14 @@ class Cantina:
     return self.estoque.listar()
   
   def escolher_cliente(self):
-    while True:
-      print_title('cliente')
-      nome = input_parsed('nome')
-      if nome:
-        return Cliente(nome)
+    nome = input_parsed('nome')
+    tipo = escolher('tipo', ['aluno', 'professor', 'funcionario'], False)
+    curso, periodo = None, None
+    if tipo == '1' or tipo == '2':
+      curso = escolher('curso', ['ia', 'esg'])
+    if tipo == '1':
+      periodo = escolher('periodo', [1, 2, 3])
+    return Cliente(nome, tipo, curso, periodo)
 
   def adicionar_cliente(self, cliente: Cliente):
     self.cliente = cliente
@@ -154,27 +176,29 @@ class Cantina:
   def remover_carrinho(self, produto: Produto, quantidade = 1):
     self.carrinho.remover_produto(produto, quantidade)
 
+  def escolher_pagamento(self):
+    return escolher('pagamento', ['pix'])
+  
+  def limpar_carrinho(self):
+    [self.remover_carrinho(p.produto, p.quantidade) for p in self.listar_carrinho()]
+
 # # auxiliar
 
-def print_title(title):
-  print(f'[ {title} ]')
-
-def escolher(title, items):
+def escolher(title, items, out = True):
   while True:
     print_title(title)
-    print('0. sair')
+    if out:
+      print('0. sair')
     [print(f'{ix+1}. {p}') for ix, p in enumerate(items)]
     try:
       item = int(input('> ')) # valida escolha como numero
-      if item == 0:
-        return item, 'sair'
+      if out:
+        if item == 0:
+          return item, 'sair'
       return item, items[item-1] # retorna como texto
     except:
       print_title('item não encontrado')
       return 0, 'item não encontrado'
-
-def quantidade_invalida():
-  print_title('quantidade invalida')
 
 def plural(num, muitostr = 's', poucostr = ''):
   return muitostr if num > 1 else poucostr
@@ -231,17 +255,21 @@ def menu():
         [print(p) for p in cantina.carrinho.listar()]
         continue
       case '7':
-        # _, pagamento = cantina.escolher_pagamento()
-        cliente = input_parsed('nome do cliente')
-        produtos = cantina.listar_carrinho()
-        # cantina.adicionar_pagamento(ItemPagamento(pagamento, produtos))
-        # cantina.adicionar_consumo(ItemConsumo(cliente, produtos))
+        opcao_pagamento, pagamento = cantina.escolher_pagamento()
+        if opcao_pagamento != 0:
+          cliente = cantina.escolher_cliente()          
+          produtos = cantina.listar_carrinho()
+          # total = cantina.somar_total()
+          # cantina.adicionar_pagamento(ItemPagamento(pagamento, produtos))
+          # cantina.adicionar_consumo(ItemConsumo(cliente, produtos))
+          cantina.limpar_carrinho()
+          # print_title(f'pagamento finalizado: {pagamento}, {total} (total)')
         continue
       case '8':
-        # [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_pagamentos())]
+        [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_pagamentos())]
         continue
       case '9':
-        # [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_consumos())]
+        [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_consumos())]
         continue
       case '0':
         exit(0)
