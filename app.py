@@ -64,11 +64,13 @@ class Estoque(Lista):
 
     for ix, p in enumerate(self.dados):
       if p.produto.nome == produto.nome:
-        if p.quantidade - quantidade:
+        if p.quantidade - quantidade >= 0:
           self.dados[ix].quantidade -= quantidade
+          print(f'{quantidade} {plural(quantidade, 'itens', 'item')} do produto "{produto.nome}" removido{plural(quantidade)} do estoque')
+        else:
+          print('Quantidade não pode ser menor que 0.')
 
     self.dump()
-    print(f'{quantidade} {plural(quantidade, 'itens', 'item')} do produto "{produto.nome}" removido{plural(quantidade)} do estoque')
   
 class Carrinho(Lista):
   def __init__(self):
