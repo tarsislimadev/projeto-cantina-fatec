@@ -148,10 +148,12 @@ def escolher(title, items):
     [print(f'{ix+1}. {p}') for ix, p in enumerate(items)]
     try:
       item = int(input('> ')) # valida escolha como numero
+      if item == 0:
+        return item, 'sair'
       return item, items[item-1] # retorna como texto
     except:
       print_title('item não encontrado')
-      return item, None
+      return None, None
 
 def quantidade_invalida():
   print_title('quantidade não pode ser menor que 0')
