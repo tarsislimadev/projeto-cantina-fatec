@@ -1,64 +1,93 @@
+# python -m pip install Faker
+
+import pickle
+from faker import Faker
+from datetime import datetime
+
+fake = Faker('pt-br')
+
 class Produto:
-  def __init__(self, nome, preco_compra, preco_venda, data_compra, data_vencimento):
+  def __init__(self, nome: str, preco_compra: float, preco_venda: float):
     self.nome = nome
     self.preco_compra = preco_compra
     self.preco_venda = preco_venda
-    self.data_compra = data_compra
-    self.data_vencimento = data_vencimento
+    Faker.seed(0)
+    self.data_compra = f'{datetime.year}-{datetime.month}-01'
+    Faker.seed(0)
+    self.data_vencimento = fake.future_date().isoformat()
 
   def __repr__(self):
     return f'nome: {self.nome}, preco_compra: {self.preco_compra}, preco_venda: {self.preco_venda}, data_compra: {self.data_compra}, data_vencimento: {self.data_vencimento}'
 
 class Pagamento:
-  def __init__(self, nome, categoria, curso, valor, data_hora):
-    self.nome = nome
-    self.categoria = categoria
-    self.curso = curso
-    self.valor = valor
+  def __init__(self, produto, cliente, data_hora):
+    self.produto = produto
+    self.cliente = cliente
     self.data_hora = data_hora
 
 class Consumo:
-  def __init__(self, consumidor, produto, pagamento):
-    self.consumidor = consumidor
+  def __init__(self, cliente, produto, pagamento):
+    self.cliente = cliente
     self.produto = produto
     self.pagamento = pagamento
 
-class Lista(list):
-  def adicionar(self, item):
-    self.append(item)
+class PickleManager():
+  def __init__(self, arquivo):
+    self.arquivo = arquivo
+    self.dados = list()
+    self.dump()
 
-  def remover(self, item):
-    pass
+  def load(self):
+    with open(self.arquivo, 'rb') as f:
+      self.dados = pickle.load(f)
+
+  def dump(self):
+    with open(self.arquivo, 'wb') as f:
+      pickle.dump(self.dados, f)
+
+class Lista(PickleManager):
+  def adicionar(self, item):
+    self.load()
+    self.dados.append(item)
+    self.dump()
 
   def listar(self):
-    return [s for s in self]
+    self.load()
+    return [s for s in self.dados]
 
 class Estoque(Lista):
+  def __init__(self):
+    super().__init__('estoque.pkl')
+
   def remover_produto(self, produto: Produto, quantidade = 1):
-    for p in self:
+    self.load()
+
+    for ix, p in enumerate(self.dados):
       if p.produto.nome == produto.nome:
-        if p.quantidade - quantidade < 0:
-          return False, 'Quantidade indisponivel'
-        p.quantidade -= quantidade
-      return True, None
-    return False, 'Produto não encontrado'
+        if p.quantidade - quantidade:
+          self.dados[ix].quantidade -= quantidade
+
+    self.dump()
+    print(f'{quantidade} {plural(quantidade, 'itens', 'item')} do produto "{produto.nome}" removido{plural(quantidade)} do estoque')
   
 class Carrinho(Lista):
-  pass
+  def __init__(self):
+    super().__init__('carrinho.pkl')
 
 class Pagamentos(Lista):
-  pass
+  def __init__(self):
+    super().__init__('pagamentos.pkl')
 
 class Consumos(Lista):
-  pass
+  def __init__(self):
+    super().__init__('consumos.pkl')
 
 class Cliente():
   def __init__(self, nome):
     self.nome = nome
 
-class ItemEstoque(list):
+class ItemEstoque():
   def __init__(self, produto: Produto, quantidade = 1):
-    super().__init__()
     self.produto = produto
     self.quantidade = quantidade
 
@@ -78,9 +107,7 @@ class Cantina:
     print(f'Produto "{produto.nome}" adiconado ao estoque')
 
   def remover_estoque(self, item: ItemEstoque, quantidade = 1):
-    ok, message = self.estoque.remover_produto(item.produto, quantidade)
-    if ok: print(f'{quantidade} produto{plural(quantidade)} "{item.produto.nome}" removido{plural(quantidade)} do estoque')
-    else: print(message)
+    self.estoque.remover_produto(item.produto, quantidade)
 
   def listar_estoque(self):
     return self.estoque.listar()
@@ -147,11 +174,9 @@ def menu():
         nome = input_data('nome')
         preco_compra = input_data('preco de compra', float)
         preco_venda = input_data('preco de venda', float)
-        data_compra = input_data('data de compra')
-        data_vencimento = input_data('data de vencimento')
         quantidade = input_data('quantidade', int)
         
-        produto = Produto(nome, preco_compra, preco_venda, data_compra, data_vencimento)
+        produto = Produto(nome, preco_compra, preco_venda)
 
         cantina.adicionar_estoque(produto, quantidade)
         continue
@@ -166,13 +191,7 @@ def menu():
         [print(f'{ix+1}. {p}') for ix, p in enumerate(cantina.listar_estoque())]
         continue
       case '4':
-        print('--- Adicionar produto ao carrinho ---')
-        produto = cantina.escolher_estoque()
-        quantidade = input_data('quantidade', int)
-        if not cantina.ver_cliente():
-          cliente = cantina.escolher_cliente()
-          cantina.adicionar_cliente(cliente)
-        # cantina.adicionar_carrinho(ProdutoCarrinho(*produto, quantidade=quantidade))
+        print('-- item 4 --')
         continue
       case '5':
         print('-- item 5 --')
