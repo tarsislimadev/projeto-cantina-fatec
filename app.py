@@ -64,7 +64,7 @@ class Estoque(Lista):
       if p.produto.nome == produto.nome:
         if p.quantidade - quantidade >= 0:
           self.dados[ix].quantidade -= quantidade
-          print_title(f'{quantidade} {plural(quantidade, 'itens', 'item')} do produto "{produto.nome}" removido{plural(quantidade)} do estoque')
+          print_title(f'removido {quantidade} {plural(quantidade, 'itens', 'item')}: {produto}')
           return True
         else:
           quantidade_invalida()
