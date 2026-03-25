@@ -45,9 +45,17 @@ class Lista(DataManager):
     return [s for s in self.dados]
 
 class ListaProdutos(Lista):
+  def adicionar_produto(self, produto: Produto, quantidade = 1):
+    for p in self.dados:
+      if f'{p.produto}' == f'{produto}':
+        p.quantidade += quantidade
+        print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')}: {produto}')
+        return True
+    return False
+
   def remover_produto(self, produto: Produto, quantidade = 1):
     for p in self.dados:
-      if p.produto.nome == produto.nome:
+      if f'{p.produto}' == f'{produto}':
         if p.quantidade - quantidade >= 0:
           p.quantidade -= quantidade
           print_title(f'removido {quantidade} {plural(quantidade, 'itens', 'item')}: {produto}')
@@ -60,9 +68,21 @@ class Estoque(ListaProdutos):
   def __init__(self):
     super().__init__('estoque.pkl')
 
+  def adicionar_produto(self, produto: Produto, quantidade = 1):
+    if not super().adicionar_produto(produto, quantidade):
+      self.dados.append(ItemEstoque(produto, quantidade))
+      return True
+    return False
+
 class Carrinho(ListaProdutos):
   def __init__(self):
     super().__init__('carrinho.pkl')
+
+  def adicionar_produto(self, produto: Produto, quantidade = 1):
+    if not super().adicionar_produto(produto, quantidade):
+      self.dados.append(ItemCarrinho(produto, quantidade))
+      return True
+    return False
 
 class Pagamentos(Lista):
   def __init__(self):
@@ -95,18 +115,16 @@ class Cantina:
     self.cliente = None
 
   def adicionar_estoque(self, produto: Produto, quantidade = 1):
-    self.estoque.adicionar(ItemEstoque(produto, quantidade))
+    ret = self.estoque.adicionar(ItemEstoque(produto, quantidade))
     print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')} {produto} ao estoque')
+    return ret
 
   def remover_estoque(self, produto: Produto, quantidade = 1):
-    self.estoque.remover_produto(produto, quantidade)
+    return self.estoque.remover_produto(produto, quantidade)
 
   def listar_estoque(self) -> list[ItemEstoque]:
     return self.estoque.listar()
   
-  def ver_cliente():
-    pass
-
   def escolher_cliente(self):
     while True:
       print_title('cliente')
@@ -153,10 +171,10 @@ def escolher(title, items):
       return item, items[item-1] # retorna como texto
     except:
       print_title('item não encontrado')
-      return None, None
+      return 0, 'item não encontrado'
 
 def quantidade_invalida():
-  print_title('quantidade não pode ser menor que 0')
+  print_title('quantidade invalida')
 
 def plural(num, muitostr = 's', poucostr = ''):
   return muitostr if num > 1 else poucostr
@@ -187,27 +205,30 @@ def menu():
         cantina.adicionar_estoque(produto, quantidade)
         continue
       case '2':
-        _, produto = cantina.escolher_estoque()
-        quantidade = input_parsed('quantidade', int)
-        cantina.remover_estoque(produto.produto, quantidade)
+        opcao_estoque, produto = cantina.escolher_estoque()
+        if opcao_estoque != 0:
+          quantidade = input_parsed('quantidade', int)
+          cantina.remover_estoque(produto.produto, quantidade)
         continue
       case '3':
         [print(p) for p in cantina.listar_estoque()]
         continue
       case '4':
-        _, produto = cantina.escolher_estoque()
-        quantidade = input_parsed('quantidade', int)
-        if cantina.remover_estoque(produto.produto, quantidade):
-          cantina.adicionar_carrinho(produto.produto, quantidade)
+        opcao_estoque, produto = cantina.escolher_estoque()
+        if opcao_estoque != 0:
+          quantidade = input_parsed('quantidade', int)
+          if cantina.remover_estoque(produto.produto, quantidade):
+            cantina.adicionar_carrinho(produto.produto, quantidade)
         continue
       case '5':
-        _, produto = cantina.escolher_carrinho()
-        quantidade = input_parsed('quantidade', int)
-        if cantina.remover_carrinho(produto.produto, quantidade):
-          cantina.adicionar_estoque(produto.produto, quantidade)
+        opcao_carrinho, produto = cantina.escolher_carrinho()
+        if opcao_carrinho != 0:
+          quantidade = input_parsed('quantidade', int)
+          if cantina.remover_carrinho(produto.produto, quantidade):
+            cantina.adicionar_estoque(produto.produto, quantidade)
         continue
       case '6':
-        [print(p) for p in cantina.listar_carrinho()]
+        [print(p) for p in cantina.carrinho.listar()]
         continue
       case '7':
         # _, pagamento = cantina.escolher_pagamento()
