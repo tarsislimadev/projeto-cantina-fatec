@@ -2,7 +2,7 @@
 
 from faker import Faker
 from datetime import datetime, timedelta
-from text import print_title, opcao_invalida
+from text import print_title, opcao_invalida, plural, input_parsed
 
 fake = Faker('pt-br')
 
@@ -18,26 +18,27 @@ class Produto:
     return f'produto "{self.nome}", R$ {self.preco_compra} (compra), R$ {self.preco_venda} (venda), {self.data_compra} (aquisicao), {self.data_vencimento} (validade)'
 
 class Cliente():
-  def __init__(self, nome, tipo, curso, periodo):
+  def __init__(self, nome: str, tipo: str, curso: str, periodo: str):
     self.nome = nome
     self.tipo = tipo
     self.curso = curso
     self.periodo = periodo
 
-  def __repr__(self):
-    return f'cliente "{self.nome}", {self.tipo} (tipo), {self.curso} (curso), {self.periodo} (periodo)'
+  def __repr__(self) -> str:
+    match self.tipo:
+      case 'aluno':
+        return f'cliente "{self.nome}", aluno (tipo), {self.curso} (curso), {self.periodo} (periodo)'
+      case 'professor':
+        return f'cliente "{self.nome}", professor (tipo), {self.curso} (curso)'
+      case 'funcionario':
+        return f'cliente "{self.nome}", funcionario (tipo)'
+    return f''
 
 class Pagamento:
   def __init__(self, produto: Produto, cliente: Cliente, data_hora: datetime):
     self.produto = produto
     self.cliente = cliente
     self.data_hora = data_hora
-
-class Consumo:
-  def __init__(self, produto: Produto, cliente: Cliente, pagamento: Pagamento):
-    self.cliente = cliente
-    self.produto = produto
-    self.pagamento = pagamento
 
 class DataManager():
   def __init__(self, arquivo):
@@ -52,7 +53,7 @@ class Lista(DataManager):
     return [s for s in self.dados]
 
 class ListaProdutos(Lista):
-  def adicionar_produto(self, produto: Produto, quantidade = 1):
+  def adicionar_produto(self, produto: Produto, quantidade = 1) -> bool:
     for p in self.dados:
       if f'{p.produto}' == f'{produto}':
         p.quantidade += quantidade
@@ -60,7 +61,7 @@ class ListaProdutos(Lista):
         return True
     return False
 
-  def remover_produto(self, produto: Produto, quantidade = 1):
+  def remover_produto(self, produto: Produto, quantidade = 1) -> bool:
     for p in self.dados:
       if f'{p.produto}' == f'{produto}':
         if p.quantidade - quantidade >= 0:
@@ -75,7 +76,7 @@ class Estoque(ListaProdutos):
   def __init__(self):
     super().__init__('estoque.pkl')
 
-  def adicionar_produto(self, produto: Produto, quantidade = 1):
+  def adicionar_produto(self, produto: Produto, quantidade = 1) -> bool:
     if not super().adicionar_produto(produto, quantidade):
       self.dados.append(ItemEstoque(produto, quantidade))
       return True
@@ -88,7 +89,7 @@ class Carrinho(ListaProdutos):
   def limpar(self):
     self.dados.clear()
 
-  def adicionar_produto(self, produto: Produto, quantidade = 1):
+  def adicionar_produto(self, produto: Produto, quantidade = 1) -> bool:
     if not super().adicionar_produto(produto, quantidade):
       self.dados.append(ItemCarrinho(produto, quantidade))
       return True
@@ -102,12 +103,17 @@ class Consumos(Lista):
   def __init__(self):
     super().__init__('consumos.pkl')
 
-class ItemProduto():
+class Item:
+  def __init__(self):
+    self.datahora = datetime.now().isoformat().split('T')[0]
+
+class ItemProduto(Item):
   def __init__(self, produto: Produto, quantidade = 1):
+    super().__init__()
     self.produto = produto
     self.quantidade = quantidade
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f'{self.produto} ({self.quantidade} {plural(self.quantidade, 'itens', 'item')})'
   
 class ItemEstoque(ItemProduto):
@@ -116,24 +122,25 @@ class ItemEstoque(ItemProduto):
 class ItemCarrinho(ItemProduto):
   pass
   
-class ItemPagamento():
+class ItemPagamento(Item):
   def __init__(self, pagamento: Pagamento, produtos = [], total = 0):
+    super().__init__()
     self.pagamento = pagamento
     self.produtos = produtos
     self.total = total
-    self.datahora = datetime.now().isoformat()
 
   def __repr__(self):
-    return f'pagamento "{self.datahora}", {self.total} (total), {len(self.produtos)} (produtos)'
+    return f'pagamento "{self.datahora}", {self.pagamento} (pagamento), R$ {self.total} (total), {len(self.produtos)} (produtos)'
 
-class ItemConsumo():
-  def __init__(self, cliente: Cliente, produtos = []):
+class ItemConsumo(Item):
+  def __init__(self, cliente: Cliente, produtos: list[ItemCarrinho] = []):
+    super().__init__()
     self.cliente = cliente
     self.produtos = produtos
-    self.datahora = datetime.now().isoformat()
 
   def __repr__(self):
-    return f'consumo "{self.datahora}", {self.cliente} (cliente), {len(self.produtos)} (produtos)'
+    itens = ', '.join([f'"{p.produto.nome}"' for p in self.produtos])
+    return f'consumo "{self.datahora}", {self.cliente} (cliente), {itens} (itens)'
 
 class Cantina:
   def __init__(self):
@@ -148,75 +155,68 @@ class Cantina:
     print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')} {produto} ao estoque')
     return ret
 
-  def remover_estoque(self, produto: Produto, quantidade = 1):
+  def remover_estoque(self, produto: Produto, quantidade = 1) -> bool:
     return self.estoque.remover_produto(produto, quantidade)
 
   def listar_estoque(self) -> list[ItemEstoque]:
     return self.estoque.listar()
   
-  def escolher_cliente(self):
+  def escolher_cliente(self) -> Cliente:
     nome = input_parsed('nome do cliente')
-    tipo = escolher('tipo de cliente', ['aluno', 'professor', 'funcionario'], False)
+    opcao_tipo, tipo = escolher('tipo de cliente', ['aluno', 'professor', 'funcionario'], False)
     curso, periodo = None, None
-    if tipo == '1' or tipo == '2':
-      curso = escolher('curso da fatec', ['ia', 'esg'])
-    if tipo == '1':
-      periodo = escolher('periodo do curso', [1, 2, 3])
+    if opcao_tipo == 1 or opcao_tipo == 2:
+      _, curso = escolher('curso da fatec', ['ia', 'esg'], False)
+    if opcao_tipo == 1:
+      _, periodo = escolher('periodo do curso', [1, 2, 3], False)
     return Cliente(nome, tipo, curso, periodo)
 
-  def adicionar_cliente(self, cliente: Cliente):
+  def adicionar_cliente(self, cliente: Cliente) -> None:
     self.cliente = cliente
 
   def escolher_estoque(self) -> ItemEstoque:
     return escolher('estoque', self.listar_estoque())
 
-  def quantidade_produtos(self):
+  def quantidade_produtos(self) -> int:
     return sum([1 for _ in self.estoque.listar()])
 
-  def adicionar_carrinho(self, produto: Produto, quantidade = 1):
+  def adicionar_carrinho(self, produto: Produto, quantidade = 1) -> None:
     self.carrinho.adicionar(ItemCarrinho(produto, quantidade))
     print_title(f'adicionado {quantidade} {plural(quantidade, 'itens', 'item')} {produto} ao carrinho')
 
-  def somar_total(self):
-    produtos = 0
-    preco = 0
-
-    for p in self.listar_carrinho():
-      preco += p.quantidade * p.produto.preco_venda
-      produtos += 1
-
-    return preco, produtos
-
-  def adicionar_pagamento(self, item: ItemPagamento):
+  def somar_total(self) -> int:
+    return sum([p.quantidade * p.produto.preco_venda for p in self.listar_carrinho()])
+  
+  def adicionar_pagamento(self, item: ItemPagamento) -> None:
     self.pagamentos.adicionar(item)
 
-  def adicionar_consumo(self, item: ItemConsumo):
+  def adicionar_consumo(self, item: ItemConsumo) -> None:
     self.consumos.adicionar(item)
 
-  def listar_carrinho(self):
+  def listar_carrinho(self) -> list[ItemCarrinho]:
     return self.carrinho.listar()
   
-  def escolher_carrinho(self):
+  def escolher_carrinho(self) -> ItemCarrinho:
     return escolher('carrinho', self.listar_carrinho())
 
-  def remover_carrinho(self, produto: Produto, quantidade = 1):
+  def remover_carrinho(self, produto: Produto, quantidade = 1) -> None:
     self.carrinho.remover_produto(produto, quantidade)
 
-  def escolher_pagamento(self):
+  def escolher_pagamento(self) -> str:
     return escolher('pagamento', ['pix'])
   
-  def limpar_carrinho(self):
+  def limpar_carrinho(self) -> None:
     self.carrinho.limpar()
 
-  def listar_pagamentos(self):
+  def listar_pagamentos(self) -> list[ItemPagamento]:
     return self.pagamentos.listar()
 
-  def listar_consumos(self):
+  def listar_consumos(self) -> list[ItemConsumo]:
     return self.consumos.listar()
 
 # # auxiliar
 
-def escolher(title, items, out = True):
+def escolher(title, items, out = True) -> int | Item:
   while True:
     print_title(title)
     if out:
@@ -229,17 +229,7 @@ def escolher(title, items, out = True):
           return item, 'sair'
       return item, items[item-1] # retorna como texto
     except:
-      print_title('item não encontrado')
-      return 0, 'item não encontrado'
-
-def plural(num, muitostr = 's', poucostr = ''):
-  return muitostr if num > 1 else poucostr
-
-def input_parsed(txt, parser = str):
-  while True:
-    ret = input(f'{txt}: ')
-    if ret != '':
-      return parser(ret)
+      pass
 
 def menu():
   cantina = Cantina()
@@ -299,7 +289,7 @@ def menu():
         [print(p) for p in cantina.listar_pagamentos()]
         continue
       case '9':
-        [print(p) for p in cantina.listar_consumos()()]
+        [print(p) for p in cantina.listar_consumos()]
         continue
       case '0':
         exit(0)
