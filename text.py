@@ -1,5 +1,5 @@
 def print_title(title):
   print(f'[ {title} ]')
 
-def quantidade_invalida():
+def opcao_invalida():
   print_title('quantidade invalida')
