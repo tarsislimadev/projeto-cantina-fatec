@@ -1,5 +1,6 @@
 # python -m pip install Faker
 
+import pickle
 from faker import Faker
 from datetime import datetime, timedelta
 from text import print_title, opcao_invalida, plural, input_parsed
@@ -235,7 +236,7 @@ def menu():
   cantina = Cantina()
 
   while True:
-    opcoes = ['adicionar produto ao estoque','remover produto do estoque','ver estoque','adicionar produto ao carrinho','remover produto do carrinho','ver carrinho','finalizar carrinho','extrair relatorio de vendas','extrair relatorio de consumos']
+    opcoes = ['adicionar produto ao estoque (Faker)','remover produto do estoque','ver estoque','adicionar produto ao carrinho','remover produto do carrinho','ver carrinho','finalizar carrinho','extrair relatorio de vendas','extrair relatorio de consumos', 'carregar lista de produtos (Pickle)', 'salvar lista de produtos (Pickle)']
 
     opcao, titulo = escolher('menu', opcoes)
 
@@ -291,6 +292,17 @@ def menu():
       case '9':
         [print(p) for p in cantina.listar_consumos()]
         continue
+      case '10':
+        with open("estoque.pkl", "rb") as f:
+          try:
+            estoque = pickle.load(f)
+          except:
+            estoque = []
+          [cantina.adicionar_estoque(e) for e in estoque]
+      case '11':
+        estoque = cantina.listar_estoque()
+        with open("estoque.pkl", "wb") as f:
+            pickle.dump(estoque, f)
       case '0':
         exit(0)
       case _:
