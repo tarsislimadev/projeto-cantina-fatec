@@ -1,9 +1,5 @@
 # Projeto Cantina Fatec
 
-[projeto](./docs/projeto.pdf)
-
-[github issue](https://github.com/orlandosaraivajr/FATEC_1SEM26_LP2/issues/1)
-
 ## descrição
 
 Projeto de gestão comercial da Cantina Fatec, pras disciplinas de Estrutura de Dados e Linguagem de Programação 2, do curso de Inteligencia Artificial, da FATEC Rio Claro.
@@ -25,6 +21,12 @@ Executar o projeto no PowerShell
 ```bash
 python ./app.py
 ```
+
+## links uteis
+
+[Projeto (PDF)](./docs/projeto.pdf)
+
+[Github Issue (Orlando)](https://github.com/orlandosaraivajr/FATEC_1SEM26_LP2/issues/1)
 
 ## licença
 
